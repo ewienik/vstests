@@ -1,2 +1,2 @@
-# vector-search-tests
+# vstests
 Tests scripts for testing ScyllaDB Vector Search
