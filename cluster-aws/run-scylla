@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -e
+
+envs=$1
+[[ -f $envs ]] || (echo envs file not provided ; exit 1)
+source $envs
+
+idx=$2
+[[ -z $idx ]] && (echo idx not provided ; exit 1)
+
+ip_ext=DB_IP_${idx}_EXT
+ip_ext=${!ip_ext}
+ip_int=DB_IP_${idx}_INT
+ip_int=${!ip_int}
+ip_vs=VS_IP_${idx}_INT
+ip_vs=${!ip_vs}
+
+# setup seeds for scylla cluster if setup for second or later node
+[[ $idx -gt 0 ]] && seeds="--seeds=$DB_IP_0_INT"
+
+ssh ubuntu@$ip_ext bash <<EOF
+echo "dc=datacenter1" > /home/ubuntu/cassandra-rackdc.properties
+echo "rack=rack$idx" >> /home/ubuntu/cassandra-rackdc.properties
+EOF
+
+# run scylla in docker
+ssh ubuntu@$ip_ext docker run -d \
+    --name scylla \
+    --net host \
+    --ulimit nofile=104857600:104857600 \
+    -v /mnt/data/scylla:/var/lib/scylla \
+    -v /home/ubuntu/cassandra-rackdc.properties:/etc/scylla/cassandra-rackdc.properties:ro \
+    $SCYLLA_DOCKER_IMAGE \
+        --vector-store-primary-uri http://$ip_vs:6080 \
+        --authenticator com.scylladb.auth.TransitionalAuthenticator \
+        --authorizer com.scylladb.auth.TransitionalAuthorizer \
+        --batch-size-warn-threshold-in-kb=1024 \
+        --broadcast-address $ip_int \
+        --broadcast-rpc-address $ip_int \
+        --rf-rack-valid-keyspaces true \
+        --endpoint-snitch GossipingPropertyFileSnitch \
+        $seeds
