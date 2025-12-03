@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e
+
+dir=$(dirname "${BASH_SOURCE[0]}")
+source $dir/.env
+
+docker run -d \
+    --name node-exporter \
+    --net host \
+    --pid host \
+    -v /:/host:ro,rslave \
+    $NODE_EXPORTER_DOCKER_IMAGE \
+        --path.rootfs /host

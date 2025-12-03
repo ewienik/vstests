@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# run nodetool command on a node with scylla
+#
+set -e
+
+dir=$(dirname "${BASH_SOURCE[0]}")
+source $dir/.env
+
+docker exec -ti scylla cqlsh "$@"

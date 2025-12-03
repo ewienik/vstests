@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+dir=$(dirname "${BASH_SOURCE[0]}")
+source $dir/.env
+
+docker run -d \
+    --name vs \
+    --net host \
+    -v $VECTOR_STORE_SCYLLADB_PASSWORD_FILE:/opt/vector-store-passwd:ro \
+    -e VECTOR_STORE_URI=127.0.1.1:6080 \
+    -e VECTOR_STORE_SCYLLADB_URI=127.0.1.1:9042 \
+    -e VECTOR_STORE_SCYLLADB_USERNAME=$VECTOR_STORE_SCYLLADB_USERNAME \
+    -e VECTOR_STORE_SCYLLADB_PASSWORD_FILE=/opt/vector-store-passwd \
+    -e VECTOR_STORE_THREADS=$VECTOR_STORE_THREADS \
+    -e VECTOR_STORE_MEMORY_LIMIT=$VECTOR_STORE_MEMORY_LIMIT \
+    -e VECTOR_STORE_USEARCH_SIMULATOR=100us:200us:1ms \
+    $VECTOR_STORE_DOCKER_IMAGE

@@ -1,0 +1,12 @@
+SCYLLA_DOCKER_IMAGE=scylladb/scylla-nightly
+SCYLLA_SMP=2
+SCYLLA_MEMORY=2G
+SCYLLA_DATA_DIR=~/tmp/vstests/scylla-data
+
+VECTOR_STORE_DOCKER_IMAGE=scylladb/vector-store
+VECTOR_STORE_SCYLLADB_USERNAME=vector_store_service
+VECTOR_STORE_SCYLLADB_PASSWORD_FILE=~/tmp/vector-store-passwd
+VECTOR_STORE_THREADS=4
+VECTOR_STORE_MEMORY_LIMIT=2000000000
+
+NODE_EXPORTER_DOCKER_IMAGE=quay.io/prometheus/node-exporter

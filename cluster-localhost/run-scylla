@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e
+
+dir=$(dirname "${BASH_SOURCE[0]}")
+source $dir/.env
+
+docker run -d \
+    --name scylla \
+    --net host \
+    -v $SCYLLA_DATA_DIR:/var/lib/scylla:z \
+    $SCYLLA_DOCKER_IMAGE \
+        --smp $SCYLLA_SMP \
+        --memory $SCYLLA_MEMORY \
+        --vector-store-primary-uri http://127.0.1.1:6080 \
+        --authenticator com.scylladb.auth.TransitionalAuthenticator \
+        --authorizer com.scylladb.auth.TransitionalAuthorizer \
+        --batch-size-warn-threshold-in-kb=1024 \
+        --rf-rack-valid-keyspaces true \
