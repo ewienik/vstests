@@ -1,2 +1,5 @@
 data/
 .env
+*.png
+*.log
+notes.txt

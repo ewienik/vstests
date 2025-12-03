@@ -1,0 +1,63 @@
+#!/bin/bash
+
+set -e
+
+logfile=$1
+[[ -f $logfile ]] || (echo log file invalid or not provided; exit 1)
+
+dir=$(dirname $logfile)
+[[ -z $dir ]] && dir=.
+
+base=$(basename $logfile .log)
+
+conc_file=$dir/${base}-concurrency.csv
+qps_file=$dir/${base}-qps.csv
+p50_file=$dir/${base}-p50.csv
+p99_file=$dir/${base}-p99.csv
+p50_0_file=$dir/${base}-p50_0.csv
+p99_0_file=$dir/${base}-p99_0.csv
+p50_1_file=$dir/${base}-p50_1.csv
+p99_1_file=$dir/${base}-p99_1.csv
+p50_2_file=$dir/${base}-p50_2.csv
+p99_2_file=$dir/${base}-p99_2.csv
+csv_file=$dir/${base}.csv
+
+echo Concurrency > $conc_file
+echo QPS > $qps_file
+echo P50 > $p50_file
+echo P99 > $p99_file
+cat $logfile | ansi2txt | grep concurrency | sed -e 's/.*--concurrency \([0-9]*\).*/\1/' >> $conc_file
+cat $logfile | ansi2txt | grep "QPS:" | sed -e 's/.*QPS: \(.*\)/\1/' >> $qps_file
+cat $logfile | ansi2txt | grep "latency P50:" | sed -e 's/.*latency P50: \(.*\)ms/\1/' >> $p50_file
+cat $logfile | ansi2txt | grep "latency P99:" | sed -e 's/.*latency P99: \(.*\)ms/\1/' >> $p99_file
+extended=$(grep "latency for 0 P99:" $logfile || true)
+if [[ -n $extended ]]; then
+  echo P50_0 > $p50_0_file
+  echo P99_0 > $p99_0_file
+  echo P50_1 > $p50_1_file
+  echo P99_1 > $p99_1_file
+  echo P50_2 > $p50_2_file
+  echo P99_2 > $p99_2_file
+  cat $logfile | ansi2txt | grep "latency for 0 P50:" | sed -e 's/.*latency for 0 P50: \(.*\)ms/\1/' >> $p50_0_file
+  cat $logfile | ansi2txt | grep "latency for 0 P99:" | sed -e 's/.*latency for 0 P99: \(.*\)ms/\1/' >> $p99_0_file
+  cat $logfile | ansi2txt | grep "latency for 1 P50:" | sed -e 's/.*latency for 1 P50: \(.*\)ms/\1/' >> $p50_1_file
+  cat $logfile | ansi2txt | grep "latency for 1 P99:" | sed -e 's/.*latency for 1 P99: \(.*\)ms/\1/' >> $p99_1_file
+  cat $logfile | ansi2txt | grep "latency for 2 P50:" | sed -e 's/.*latency for 2 P50: \(.*\)ms/\1/' >> $p50_2_file
+  cat $logfile | ansi2txt | grep "latency for 2 P99:" | sed -e 's/.*latency for 2 P99: \(.*\)ms/\1/' >> $p99_2_file
+  paste -d, $conc_file $qps_file $p50_file $p99_file $p50_0_file $p99_0_file $p50_1_file $p99_1_file $p50_2_file $p99_2_file > $csv_file
+else
+  paste -d, $conc_file $qps_file $p50_file $p99_file > $csv_file
+fi
+
+rm -f \
+    $conc_file \
+    $qps_file \
+    $p50_file \
+    $p99_file \
+    $p50_0_file \
+    $p99_0_file \
+    $p50_1_file \
+    $p99_1_file \
+    $p50_2_file \
+    $p99_2_file \
+

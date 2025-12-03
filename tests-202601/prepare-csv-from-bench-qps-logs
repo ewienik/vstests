@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+
+logfile=$1
+[[ -f $logfile ]] || (echo log file invalid or not provided; exit 1)
+
+dir=$(dirname $logfile)
+[[ -z $dir ]] && dir=.
+
+base=$(basename $logfile .log)
+
+delay_file=$dir/${base}-delay.csv
+qps_file=$dir/${base}-qps.csv
+p99_file=$dir/${base}-p99.csv
+csv_file=$dir/${base}.csv
+
+echo Delay > $delay_file
+echo QPS > $qps_file
+echo P99 > $p99_file
+cat $logfile | ansi2txt | grep 'delay=' | sed -e 's/^delay=\([0-9]*\).*/\1/' >> $delay_file
+cat $logfile | ansi2txt | grep "QPS:" | sed -e 's/.*QPS: \(.*\)/\1/' >> $qps_file
+cat $logfile | ansi2txt | grep "latency P99:" | sed -e 's/.*latency P99: \(.*\)ms/\1/' >> $p99_file
+paste -d, $delay_file $qps_file $p99_file > $csv_file
+
+rm -f \
+    $delay_file \
+    $qps_file \
+    $p99_file \
+

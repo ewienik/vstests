@@ -5,7 +5,7 @@ set -e
 dir=$(dirname "${BASH_SOURCE[0]}")
 source $dir/.env
 
-docker run -d \
+docker run --rm \
     --name scylla \
     --net host \
     -v $SCYLLA_DATA_DIR:/var/lib/scylla:z \
