@@ -18,6 +18,8 @@ ip_db=${!ip_db}
 
 cat $VECTOR_STORE_SCYLLADB_PASSWORD_FILE | ssh ubuntu@$ip_ext "cat > /home/ubuntu/vector-store-passwd"
 
+[[ -n $VECTOR_STORE_USEARCH_SIMULATOR ]] && VECTOR_STORE_USEARCH_SIMULATOR="-e VECTOR_STORE_USEARCH_SIMULATOR=$VECTOR_STORE_USEARCH_SIMULATOR"
+
 # run vs in docker
 ssh ubuntu@$ip_ext sudo docker run -d \
     --name vs \
@@ -28,4 +30,5 @@ ssh ubuntu@$ip_ext sudo docker run -d \
     -e VECTOR_STORE_SCYLLADB_URI=$ip_db:9042 \
     -e VECTOR_STORE_SCYLLADB_USERNAME=$VECTOR_STORE_SCYLLADB_USERNAME \
     -e VECTOR_STORE_SCYLLADB_PASSWORD_FILE=/opt/vector-store-passwd \
+    $VECTOR_STORE_USEARCH_SIMULATOR \
     $VECTOR_STORE_DOCKER_IMAGE
