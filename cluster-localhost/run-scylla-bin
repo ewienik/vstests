@@ -1,0 +1,22 @@
+#!/bin/bash
+
+set -e
+
+dir=$(dirname "${BASH_SOURCE[0]}")
+source $dir/.env
+
+bin=$1
+[[ -x "$bin" ]] || { echo "Usage: $0 <path-to-scylla-binary>"; exit 1; }
+
+$bin \
+    -W $SCYLLA_DATA_DIR \
+    --smp $SCYLLA_SMP \
+    --memory $SCYLLA_MEMORY \
+    --developer-mode 1 \
+    --overprovisioned \
+    --vector-store-primary-uri http://127.0.1.1:6080 \
+    --authenticator com.scylladb.auth.TransitionalAuthenticator \
+    --authorizer com.scylladb.auth.TransitionalAuthorizer \
+    --batch-size-warn-threshold-in-kb=1024 \
+    --rf-rack-valid-keyspaces true \
+
